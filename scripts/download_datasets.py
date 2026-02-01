@@ -1,124 +1,120 @@
 """
-Download text-to-SQL datasets
+Download text-to-SQL datasets via direct URLs (Spider2, BIRD, WikiSQL).
 """
 
 import argparse
+import tarfile
+import zipfile
 from pathlib import Path
-from datasets import load_dataset
-import json
+from urllib.request import urlretrieve
+
+# URLs that work for direct download
+SPIDER2_URL = "https://github.com/xlang-ai/Spider2/archive/refs/heads/main.zip"
+BIRD_DEV_URL = "https://bird-bench.oss-cn-beijing.aliyuncs.com/dev.zip"
+WIKISQL_URL = "https://github.com/salesforce/WikiSQL/raw/master/data.tar.bz2"
 
 
-def download_spider(output_dir: Path):
-    """Download Spider dataset"""
-    print("Downloading Spider...")
-    
+def download_file(url: str, dest: Path, desc: str = "Downloading") -> Path:
+    """Download a file from URL to dest. Returns path to downloaded file."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    print(f"{desc}...")
     try:
-        train_data = load_dataset("spider", split="train")
-        val_data = load_dataset("spider", split="validation")
-        
-        spider_dir = output_dir / "spider"
-        spider_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Save as JSON
-        with open(spider_dir / "train.json", 'w') as f:
-            json.dump([dict(ex) for ex in train_data], f)
-        
-        with open(spider_dir / "dev.json", 'w') as f:
-            json.dump([dict(ex) for ex in val_data], f)
-        
-        print(f"✓ Spider downloaded to {spider_dir}")
+        urlretrieve(url, dest)
+        print(f"  ✓ Saved to {dest}")
+        return dest
     except Exception as e:
-        print(f"✗ Spider download failed: {e}")
+        print(f"  ✗ Failed: {e}")
+        raise
 
 
-def download_wikisql(output_dir: Path):
-    """Download WikiSQL dataset"""
-    print("Downloading WikiSQL...")
-    
-    try:
-        # WikiSQL is large, so we just verify it's accessible
-        train_data = load_dataset("wikisql", split="train", streaming=True)
-        
-        wikisql_dir = output_dir / "wikisql"
-        wikisql_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Create marker file
-        with open(wikisql_dir / "README.txt", 'w') as f:
-            f.write("WikiSQL will be streamed from HuggingFace during training.\n")
-        
-        print(f"✓ WikiSQL configured for streaming")
-    except Exception as e:
-        print(f"✗ WikiSQL setup failed: {e}")
+def download_spider2(output_dir: Path) -> None:
+    """Download Spider2 dataset (GitHub archive)."""
+    spider2_dir = output_dir / "spider2"
+    spider2_dir.mkdir(parents=True, exist_ok=True)
+    zip_path = spider2_dir / "spider2.zip"
+
+    download_file(SPIDER2_URL, zip_path, desc="Downloading Spider2")
+
+    print("  Extracting...")
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        zf.extractall(spider2_dir)
+    zip_path.unlink()
+    print(f"✓ Spider2 ready at {spider2_dir}")
 
 
-def download_gretel(output_dir: Path):
-    """Download Gretel synthetic dataset"""
-    print("Downloading Gretel Synthetic...")
-    
-    try:
-        gretel_dir = output_dir / "gretel"
-        gretel_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Large dataset, stream during training
-        with open(gretel_dir / "README.txt", 'w') as f:
-            f.write("Gretel Synthetic will be streamed from HuggingFace during training.\n")
-            f.write("Dataset: gretelai/synthetic_text_to_sql\n")
-        
-        print(f"✓ Gretel configured for streaming")
-    except Exception as e:
-        print(f"✗ Gretel setup failed: {e}")
+def download_bird(output_dir: Path) -> None:
+    """Download BIRD dev set (Aliyun OSS)."""
+    bird_dir = output_dir / "bird"
+    bird_dir.mkdir(parents=True, exist_ok=True)
+    zip_path = bird_dir / "bird_dev.zip"
+
+    download_file(BIRD_DEV_URL, zip_path, desc="Downloading BIRD dev")
+
+    print("  Extracting...")
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        zf.extractall(bird_dir)
+    zip_path.unlink()
+    print(f"✓ BIRD dev ready at {bird_dir}")
+
+
+def download_wikisql(output_dir: Path) -> None:
+    """Download WikiSQL data (Salesforce GitHub)."""
+    wikisql_dir = output_dir / "wikisql"
+    wikisql_dir.mkdir(parents=True, exist_ok=True)
+    tarball_path = wikisql_dir / "data.tar.bz2"
+
+    download_file(WIKISQL_URL, tarball_path, desc="Downloading WikiSQL")
+
+    print("  Extracting...")
+    with tarfile.open(tarball_path, "r:bz2") as tf:
+        tf.extractall(wikisql_dir)
+    tarball_path.unlink()
+    print(f"✓ WikiSQL ready at {wikisql_dir}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Download text-to-SQL datasets")
+    parser = argparse.ArgumentParser(
+        description="Download text-to-SQL datasets (Spider2, BIRD, WikiSQL)"
+    )
     parser.add_argument(
         "--datasets",
         nargs="+",
-        default=["spider", "wikisql", "gretel"],
-        choices=["spider", "bird", "wikisql", "gretel", "all"],
-        help="Datasets to download"
+        default=["spider2", "bird", "wikisql"],
+        choices=["spider2", "bird", "wikisql", "all"],
+        help="Datasets to download",
     )
     parser.add_argument(
         "--output_dir",
         type=str,
         default="./data",
-        help="Output directory for datasets"
+        help="Output directory for datasets",
     )
-    parser.add_argument(
-        "--cache_dir",
-        type=str,
-        default=None,
-        help="Cache directory for HuggingFace datasets"
-    )
-    
+
     args = parser.parse_args()
-    
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    
-    print(f"Downloading datasets to {output_dir}")
-    print("=" * 50)
-    
+
     datasets = args.datasets
     if "all" in datasets:
-        datasets = ["spider", "wikisql", "gretel"]
-    
-    for dataset in datasets:
-        if dataset == "spider":
-            download_spider(output_dir)
-        elif dataset == "wikisql":
+        datasets = ["spider2", "bird", "wikisql"]
+
+    print(f"Downloading to {output_dir}")
+    print("=" * 50)
+
+    for name in datasets:
+        if name == "spider2":
+            download_spider2(output_dir)
+        elif name == "bird":
+            download_bird(output_dir)
+        elif name == "wikisql":
             download_wikisql(output_dir)
-        elif dataset == "gretel":
-            download_gretel(output_dir)
         else:
-            print(f"Unknown dataset: {dataset}")
-    
+            print(f"Unknown dataset: {name}")
+        print()
+
     print("=" * 50)
     print("Dataset download complete!")
-    print(f"\nDatasets saved to: {output_dir}")
-    print("\nNext steps:")
-    print("1. Run preprocess_data.py to prepare data for training")
-    print("2. Run train.py to start training")
+    print(f"Datasets saved to: {output_dir}")
 
 
 if __name__ == "__main__":
