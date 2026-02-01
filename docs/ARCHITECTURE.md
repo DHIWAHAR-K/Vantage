@@ -401,6 +401,10 @@ Potential enhancements:
 4. **Soft MoE**: Weighted combination of all experts (not top-K)
 5. **Dynamic K**: Learn how many experts to activate per token
 
+## Related Resources
+
+For interactive experiments and demos with the MoE architecture, see the Jupyter notebooks in the `notebooks/` directory.
+
 ## References
 
 - Switch Transformer (Google, 2021)

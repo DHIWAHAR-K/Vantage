@@ -148,6 +148,7 @@ vantage/
 │   └── inference/       # Generation and API
 ├── configs/             # Model configurations (small/medium/large)
 ├── scripts/             # Training, evaluation, and export scripts
+├── notebooks/           # Jupyter notebooks for experimentation and demos
 ├── docs/                # Comprehensive documentation
 └── tests/               # Unit tests
 ```
@@ -158,6 +159,7 @@ vantage/
 - [Training Guide](docs/TRAINING.md) - Dataset preparation and hyperparameters
 - [Evaluation Methodology](docs/EVALUATION.md) - Benchmarks and metrics
 - [API Reference](docs/API.md) - Usage examples and integration
+- [Notebooks](notebooks/) - Interactive examples and experiments
 - [Model Cards](docs/model_cards/) - Model specifications and limitations
 
 ## Performance

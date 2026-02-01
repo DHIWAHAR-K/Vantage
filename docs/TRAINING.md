@@ -629,3 +629,4 @@ After training:
 3. Deploy for inference
 4. Collect user feedback
 5. Iterate on model/data
+6. Try interactive training experiments in the `notebooks/` directory

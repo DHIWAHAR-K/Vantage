@@ -222,6 +222,8 @@ print(sql)
 # SELECT department, AVG(salary) FROM employees GROUP BY department
 ```
 
+Interactive notebooks with more examples are available in the repository's `notebooks/` directory.
+
 ## Citation
 
 ```bibtex

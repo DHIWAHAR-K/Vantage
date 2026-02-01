@@ -661,4 +661,4 @@ best_sql = select_best(candidates)  # Your selection logic
 - See `TRAINING.md` for model training
 - See `EVALUATION.md` for benchmarking
 - See `ARCHITECTURE.md` for technical details
-- Check examples in `examples/` directory
+- Try interactive examples in the `notebooks/` directory

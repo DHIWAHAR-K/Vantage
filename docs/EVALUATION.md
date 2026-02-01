@@ -504,6 +504,10 @@ Track these metrics:
 - **Expert Utilization**: Ensure no expert collapse
 - **Schema Coverage**: Track unseen tables/columns
 
+## Interactive Notebooks
+
+You can run evaluation steps interactively using the Jupyter notebooks in the `notebooks/` directory.
+
 ## Future Work
 
 Potential improvements:

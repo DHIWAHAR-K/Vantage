@@ -69,6 +69,9 @@ vantage/
 │   ├── export_hf.py            # HuggingFace export ✅
 │   └── demo.py                 # Gradio demo interface ✅
 │
+├── notebooks/                     # Jupyter notebooks
+│   └── (experiments, demos)     # Interactive examples ✅
+│
 ├── docs/                         # Documentation
 │   ├── ARCHITECTURE.md         # Technical architecture ✅
 │   ├── TRAINING.md             # Training guide ✅
