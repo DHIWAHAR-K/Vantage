@@ -113,9 +113,9 @@ MIT License - see LICENSE file for details
 
 ## Acknowledgments
 
-- Built with [MLX](https://github.com/ml-explore/mlx) by Apple
-- Trained on Spider, BIRD-SQL, WikiSQL, and Gretel datasets
-- Inspired by Mixtral and Switch Transformer architectures
+- **[MLX](https://github.com/ml-explore/mlx)** (Apple) — framework for efficient training and inference on Apple Silicon.
+- **Benchmark datasets:** [Spider](https://yale-lily.github.io/spider), [BIRD-SQL](https://bird-bench.github.io/), [WikiSQL](https://github.com/salesforce/WikiSQL) for text-to-SQL training and evaluation.
+- **Architecture:** MoE design inspired by [Mixtral](https://arxiv.org/abs/2401.04088) and [Switch Transformer](https://arxiv.org/abs/2101.03961); decoder and attention patterns draw on the broader LLM and text-to-SQL literature.
 
 ## Contact
 
