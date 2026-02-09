@@ -1,6 +1,3 @@
-# Data
-data/
-
 # Python
 __pycache__/
 *.py[cod]
@@ -25,23 +22,40 @@ wheels/
 
 # Virtual environments
 venv/
-.venv/
 env/
-.env/
+ENV/
 
-# IDE / Editor
-.idea/
+# IDEs
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
 
-# OS
-.DS_Store
-Thumbs.db
-
 # Jupyter
-.ipynb_checkpoints/
+.ipynb_checkpoints
 
-# Logs
-*.log
+# MLX and training
+checkpoints/
+runs/
+logs/
+*.ckpt
+*.pth
+
+# Data (keeping structure but not processed files)
+data/processed/
+data/cache/
+data/ 
+*.mmap
+*.idx
+
+# Model outputs
+models/
+outputs/
+
+# System
+.DS_Store
+.cursor/
+
+# Config overrides
+configs/local_*.yaml

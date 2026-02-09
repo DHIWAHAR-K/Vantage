@@ -1,127 +1,80 @@
-# Vantage: Text-to-SQL with Mixture of Experts
+# T5-Small Fine-tuning for Text-to-SQL with MLX
 
-**Production-ready text-to-SQL generation using Mixture of Experts architecture, optimized for Apple Silicon with MLX**
-
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![MLX](https://img.shields.io/badge/MLX-Apple%20Silicon-orange.svg)](https://github.com/ml-explore/mlx)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A practical, laptop-friendly approach to training text-to-SQL models.
 
 ## Overview
 
-Vantage is a state-of-the-art text-to-SQL model that uses a **Mixture of Experts (MoE)** architecture for efficient and accurate SQL query generation from natural language. Built with MLX for optimal performance on Apple Silicon (M1/M2/M3), Vantage offers three model variants to balance between speed and accuracy.
+Fine-tune T5-small (60M parameters) on SynSQL's massive dataset using MLX optimization for Apple Silicon. This approach is **actually trainable** on a MacBook M3 Max.
 
-### Key Features
+## Key Features
 
-- **Sparse Mixture of Experts**: Only ~12.5% of parameters active per forward pass
-- **Three Model Sizes**: Small (2B), Medium (8B), Large (24B) parameters
-- **Optimized for Apple Silicon**: Native MLX implementation for M-series chips
-- **Production Ready**: Comprehensive evaluation, benchmarks, and deployment tools
-- **Multi-Dataset Training**: Spider, BIRD-SQL, WikiSQL, and synthetic data
-- **Schema-Aware**: Cross-attention mechanism for understanding database structures
+- Pre-trained T5-small (60M params) as base
+- Fine-tuned on 22.9M SynSQL examples
+- MLX optimized for M3 Max (fast + cool)
+- Thermal management built-in
+- 4-8 hour training time (realistic!)
+- Competitive benchmark accuracy
 
-## Architecture
-
-Vantage uses a decoder-only transformer with Mixture of Experts layers. Each MoE layer contains multiple expert networks, with a learned router selecting the top-K experts for each token. This sparse activation pattern significantly reduces computation while maintaining model capacity.
-
-```
-Text Query + Schema → Tokenizer → MoE Transformer Layers → SQL Generation
-                                          ↓
-                                    Sparse Router
-                                    (Top-2 Selection)
-                                          ↓
-                              [Expert 1] [Expert 2] ... [Expert N]
-```
-
-**Key Components:**
-- Sparse router with top-K gating (K=2)
-- Expert networks with SwiGLU activation
-- Load balancing auxiliary loss
-- Schema cross-attention every 4 layers
-- Rotary position embeddings (RoPE)
-
-## Model Variants
-
-| Model | Parameters | Active Params | Memory | Spider EX | Speed |
-|-------|-----------|---------------|---------|-----------|-------|
-| Small | 2B | 250M | ~50GB | 70%+ | Fast |
-| Medium | 8B | 1B | ~110GB | 78%+ | Balanced |
-| Large | 24B | 3B | ~180GB | 82%+ | Maximum Accuracy |
-
-## Training
+## Installation
 
 ```bash
-# Download datasets
-python scripts/download_datasets.py
-
-# Preprocess data
-python scripts/preprocess_data.py --config configs/medium_model.yaml
-
-# Train model
-python scripts/train.py \
-    --config configs/medium_model.yaml \
-    --output_dir ./checkpoints/medium \
-    --wandb_project vantage-text2sql
+pip install -r requirements.txt
 ```
 
-## Evaluation
+## Quick Start
 
+### 1. Prepare Data
 ```bash
-# Evaluate on Spider benchmark
-python scripts/evaluate.py \
-    --model_path ./checkpoints/medium/best_model \
-    --benchmark spider \
-    --output_dir ./results
+python scripts/prepare_data.py --subset-size 5000000
 ```
 
-**Benchmark Results:**
-- Spider: State-of-the-art accuracy on complex multi-table queries
-- BIRD-SQL: Strong cross-domain generalization
-- WikiSQL: Near-perfect accuracy on simple queries
-
-## Project Structure
-
-```
-vantage/
-├── src/
-│   ├── models/          # MoE architecture implementation
-│   ├── data/            # Dataset loaders and preprocessing
-│   ├── training/        # Training loop and optimization
-│   ├── evaluation/      # Metrics and benchmarking
-│   └── inference/       # Generation and API
-├── configs/             # Model configurations (small/medium/large)
-├── scripts/             # Training, evaluation, and export scripts
-├── notebooks/           # Jupyter notebooks for experimentation and demos
-└── tests/               # Unit tests
+### 2. Convert T5 to MLX Format
+```bash
+python scripts/convert_t5_to_mlx.py
 ```
 
-## Citation
-
-If you use Vantage in your research, please cite:
-
-```bibtex
-@software{vantage2024,
-  title={Vantage: Text-to-SQL with Mixture of Experts},
-  author={DHIWAHAR-K},
-  year={2024},
-  url={https://github.com/DHIWAHAR-K/Vantage}
-}
+### 3. Fine-tune on SynSQL
+```bash
+python scripts/finetune.py --config configs/t5_finetune.yaml
 ```
+
+### 4. Evaluate
+```bash
+python scripts/evaluate.py --checkpoint checkpoints/best_model
+```
+
+### 5. Try the Demo
+```bash
+streamlit run scripts/demo.py
+```
+
+## Training Details
+
+- **Base Model**: T5-small (60M params)
+- **Dataset**: SynSQL (5M subset of 22.9M examples)
+- **Training Time**: 4-8 hours on M3 Max
+- **Batch Size**: 32 (thermal-friendly)
+- **Effective Batch**: 256 (with gradient accumulation)
+- **Curriculum**: Simple → Medium → Complex SQL
+
+## Expected Performance
+
+| Metric | Target |
+|--------|--------|
+| Spider Exact Match | 55-65% |
+| Spider Execution | 60-70% |
+| WikiSQL Execution | 80-85% |
+| Inference Speed | <50ms |
+| Training Time | 4-8 hours |
+
+## Why T5-Small?
+
+- Pre-trained on massive corpus (understands language)
+- Encoder-decoder perfect for text-to-SQL
+- 60M params = fast inference
+- Proven architecture
+- Fine-tuning 10-20x faster than training from scratch
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Acknowledgments
-
-- **[MLX](https://github.com/ml-explore/mlx)** (Apple) — framework for efficient training and inference on Apple Silicon.
-- **Benchmark datasets:** [Spider](https://yale-lily.github.io/spider), [BIRD-SQL](https://bird-bench.github.io/), [WikiSQL](https://github.com/salesforce/WikiSQL) for text-to-SQL training and evaluation.
-- **Architecture:** MoE design inspired by [Mixtral](https://arxiv.org/abs/2401.04088) and [Switch Transformer](https://arxiv.org/abs/2101.03961); decoder and attention patterns draw on the broader LLM and text-to-SQL literature.
-
-## Contact
-
-- GitHub: [@DHIWAHAR-K](https://github.com/DHIWAHAR-K)
-- Email: adhithyak99@gmail.com
-
----
-
-**Note**: This is a research project. Always validate generated SQL queries before execution in production environments.
+MIT License - See LICENSE file

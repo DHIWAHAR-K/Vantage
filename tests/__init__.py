@@ -1,3 +1,0 @@
-"""
-Vantage test suite
-"""

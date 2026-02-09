@@ -1,0 +1,48 @@
+model:
+  base_model: "t5-small"
+  num_params: 60M
+  
+training:
+  # Thermal-friendly settings for M3 Max
+  batch_size: 32
+  gradient_accumulation: 8      # Effective batch = 256
+  max_seq_length: 256
+  max_output_length: 128
+  
+  # Fine-tuning hyperparameters
+  learning_rate: 5e-5           # Lower than pre-training
+  weight_decay: 0.01
+  warmup_steps: 5000
+  max_steps: 100000             # ~20 epochs over 5M examples
+  
+  # Data sampling strategy
+  use_full_synsql: false        # Use subset for speed
+  synsql_subset_size: 5000000   # 5M examples (manageable)
+  shuffle_buffer: 10000
+  sampling_strategy: "stratified"  # Balanced across difficulties
+  
+  # Curriculum phases
+  curriculum:
+    phase1_steps: 40000         # Simple SQL
+    phase2_steps: 35000         # Medium SQL
+    phase3_steps: 25000         # Complex SQL
+  
+  # Thermal management
+  eval_every: 10000
+  save_every: 10000
+  cooling_break_every: 20000    # Pause for 2 mins every 20K steps
+  cooling_break_duration: 120   # Seconds
+  
+  # Paths
+  checkpoint_dir: "checkpoints"
+  log_dir: "logs"
+  
+evaluation:
+  benchmarks:
+    - spider_dev
+    - wikisql_test
+    - synsql_holdout
+  
+  metrics:
+    - exact_match
+    - execution_accuracy
